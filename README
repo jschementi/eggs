@@ -1,0 +1,59 @@
+= Eggs
+by Jimmy Schementi
+
+A Silverlight behavior testing library (using IronRuby and Bacon)
+
+== Dependencies
+
+Make sure to run "git submodule init" and "git submodule update" to get
+any dependencies.
+
+bacon: a small RSpec clone
+http://github.com/jschementi/bacon
+
+== Sample
+
+The sample depends on AgDLR:
+git clone git://github.com/jschementi/agdlr.git
+
+Clone it so agdlr and eggs are siblings. After doing a build of AgDLR, 
+from their parent director, run:
+
+agdlr\script\server /b:eggs/sample/index.html
+
+You're default browser will open, and you should see the following:
+
+rb> Eggs.current.run_tests
+Sample bacon test
+- should be true
+
+1 specifications (1 requirements), 0 failures, 0 errors
+=> nil
+
+== Usage
+
+From a IronRuby silverlight application:
+
+require 'eggs'
+
+# Tell eggs your test sets, and each test name in those sets
+Eggs.config(
+  :test_set => %W(
+    console
+    dynamic_application
+    extension_types
+    package
+    window
+  ),
+  :another_test_set => %W(
+    args
+    auto_addref
+    error_handle
+    execfile
+    issubclass
+  )
+)
+
+# Do you like bacon with your eggs? I hope so ...
+# Runs the tests with bacon
+Eggs.run
