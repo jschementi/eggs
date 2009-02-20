@@ -6,7 +6,7 @@ SILVERLIGHT = true
 #
 # 'bacon' is the spec framework used for the tests
 #
-$: << "#{File.dirname(__FILE__)}/eggs/lib/bacon/lib"
+$:.unshift "#{File.dirname(__FILE__)}/eggs/lib/bacon/lib"
 require 'bacon'
 
 #
@@ -62,7 +62,8 @@ class Eggs
       test_files.each do |file|
         loaded = false
         ["#{test_type}/#{file}_test.rb", "#{test_type}/test_#{file}.rb"].each do |pth|
-          pth = File.dirname(DynamicApplication.current.entry_point.to_s) + '/' + pth
+          prepend = File.dirname(DynamicApplication.current.entry_point.to_s)
+          pth = "#{prepend}/#{pth}" if prepend != '.'
           if !loaded && Package.get_file(pth)
             load pth 
             loaded = true
