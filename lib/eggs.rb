@@ -9,6 +9,11 @@ SILVERLIGHT = true
 $:.unshift "#{File.dirname(__FILE__)}/eggs/lib/bacon/lib"
 require 'bacon'
 
+# 
+# Helper for running python code from Ruby
+# 
+require 'eggs/python'
+
 #
 # TODO better way to redirect output?
 #
