@@ -12,7 +12,8 @@ require 'bacon'
 # 
 # Helper for running python code from Ruby
 # 
-require 'eggs/python'
+$:.unshift "#{File.dirname(__FILE__)}/eggs"
+require 'python'
 
 #
 # TODO better way to redirect output?
