@@ -28,6 +28,7 @@ task :clean do
   puts "Cleaning"
   require 'fileutils'
   FileUtils.rm 'lib/Eggs.dll' if File.exist?('lib/Eggs.dll')
+  FileUtils.rm 'lib/Eggs.pdb' if File.exist?('lib/Eggs.pdb')
   FileUtils.rm 'eggs.xap' if File.exist?('eggs.xap')
 end
 
