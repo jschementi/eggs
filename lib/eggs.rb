@@ -11,9 +11,9 @@ require 'bacon'
 
 # 
 # Helper for running python code from Ruby
-# 
+#
 $:.unshift "#{File.dirname(__FILE__)}/eggs"
-require 'python'
+require 'python' if defined?(IronPython)
 
 #
 # TODO better way to redirect output?
@@ -45,17 +45,17 @@ class Eggs
       @config = options
     end
 
-    def run
-      Repl.show
+    def get_config
+      @config
+    end
+
+    def run(engine = nil)
+      engine ? Repl.show(engine, engine.create_scope) : Repl.show
       Repl.current.input_buffer.write("Eggs.current.run_tests\n")
     end
 
     def current
       @instance ||= Eggs.new
-    end
-  private
-    def get_config
-      @config
     end
   end
 
@@ -68,14 +68,16 @@ class Eggs
       test_files.each do |file|
         loaded = false
         ["#{test_type}/#{file}_test.rb", "#{test_type}/test_#{file}.rb"].each do |pth|
-          prepend = File.dirname(DynamicApplication.current.entry_point.to_s)
+          prepend = File.dirname(DynamicApplication.current ? 
+              DynamicApplication.current.entry_point.to_s :
+              '')
           pth = "#{prepend}/#{pth}" if prepend != '.'
           if !loaded && Package.get_file(pth)
             load pth 
             loaded = true
           end
         end
-        raise "#{file} is not a known test (check our Eggs.config call)" unless loaded
+        raise "#{file} is not a known test (check your Eggs.config call)" unless loaded
       end
     end
     Eggs.execute_at_exit_blocks
