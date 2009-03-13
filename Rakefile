@@ -1,6 +1,6 @@
 task :default => :rexap
   
-SL  = 'C:\Program Files\Microsoft Silverlight\3.0.40226.0'
+SL  = 'C:\Program Files\Microsoft Silverlight\3.0.40307.0'
 CSC = 'C:\Windows\Microsoft.NET\Framework\v3.5\csc.exe'
 DLR = 'c:\users\jimmysch\dev\agdlr\bin\debug'
 CHR = "#{DLR}\\Chiron.exe"
