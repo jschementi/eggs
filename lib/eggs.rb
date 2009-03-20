@@ -13,7 +13,11 @@ require 'bacon'
 # Helper for running python code from Ruby
 #
 $:.unshift "#{File.dirname(__FILE__)}/eggs"
-require 'python' if defined?(IronPython)
+begin
+  require 'python'
+rescue
+  # ignore
+end
 
 #
 # TODO better way to redirect output?
