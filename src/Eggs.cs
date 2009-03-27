@@ -32,11 +32,13 @@ public class Eggs {
         "IronRuby.Libraries" 
     }; //, "IronPython", "IronPython.Modules"
 
-    public static void Start(Dictionary<string, List<string>> tests, StreamResourceInfo xap) {
-        var assemblies = LoadDLRAssemblies(xap);
-        InitializeDLR(xap, assemblies);
+    public static void Start(Uri testsXapUri, StreamResourceInfo eggsXap) {
+        var assemblies = LoadDLRAssemblies(eggsXap);
+        InitializeDLR(eggsXap, assemblies);
         LoadEggs();
-        ConfigureAndRunEggs(tests);
+        DownloadTestsXap(testsXapUri, delegate(StreamResourceInfo testsXap) {
+            ConfigureAndRunEggs(testsXap);
+        });
     }
 
     private static void InitializeDLR(StreamResourceInfo xap, List<Assembly> assemblies) {
@@ -74,18 +76,33 @@ public class Eggs {
         Repl.Show(_engine, _scope);
     }
 
-    private static void ConfigureAndRunEggs(Dictionary<string, List<string>> tests) {
+    private static Action<StreamResourceInfo> _onDownloadComplete;
+
+    private static void DownloadTestsXap(Uri testsXapUri, Action<StreamResourceInfo> OnDownloadComplete) {
+        _onDownloadComplete = OnDownloadComplete;
+        WebClient wc = new WebClient(); 
+        wc.OpenReadCompleted += new OpenReadCompletedEventHandler(DownloadTestXap_Complete);
+        wc.OpenReadAsync(testsXapUri);
+    }
+
+    private static void DownloadTestXap_Complete(object sender, OpenReadCompletedEventArgs e) {
+        if (e.Error == null) {
+            var sri = new StreamResourceInfo(e.Result, null);
+            if (_onDownloadComplete != null) {
+                _onDownloadComplete.Invoke(sri);
+            }
+        } else {
+            System.Windows.Browser.HtmlPage.Window.Alert("Tests failed to download");
+        }
+    }
+
+    private static void ConfigureAndRunEggs(StreamResourceInfo testsXap) {
+        DynamicApplication.XapFile = testsXap;
+
         ScriptScope scope = _engine.Runtime.Globals;
         IronRuby.Ruby.GetExecutionContext(_engine).DefineGlobalVariable("engine", _engine);
-        IronRuby.Ruby.GetExecutionContext(_engine).DefineGlobalVariable("test_list", tests);
-
-        DynamicApplication.XapFile = null;
         
-        var code = @"
-$test_list = $test_list.inject({}) {|h, kvp| h[kvp.key.to_s] = kvp.value.to_s; h}
-Eggs.config($test_list)
-Eggs.run($engine)
-";
+        var code = "Eggs.run($engine)";
         var source = _engine.CreateScriptSourceFromString(code, SourceCodeKind.File);
         source.Compile(new ErrorFormatter.Sink()).Execute(scope);
     }

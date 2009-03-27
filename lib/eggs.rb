@@ -50,8 +50,10 @@ class Eggs
     end
 
     def run(engine = nil)
+      # eggs_config should call something like Eggs.config(:tests => ['sample'])
+      load 'eggs_config.rb'
       engine ? Repl.show(engine, engine.create_scope) : Repl.show
-      Repl.current.input_buffer.write("Eggs.current.run_tests\n")
+      Repl.current.input_buffer.write "Eggs.current.run_tests\n"
     end
 
     def current
@@ -62,22 +64,23 @@ class Eggs
   # 
   # Test Running
   #
-  # TODO need a way to walk all *_test.rb files in tests directory
   def run_tests
     Eggs.get_config.each do |test_type, test_files|
       test_files.each do |file|
         loaded = false
         ["#{test_type}/#{file}_test.rb", "#{test_type}/test_#{file}.rb"].each do |pth|
-          prepend = File.dirname(DynamicApplication.current ? 
+          prepend = File.dirname(
+            DynamicApplication.current ? 
               DynamicApplication.current.entry_point.to_s :
-              '')
+              ''
+          )
           pth = "#{prepend}/#{pth}" if prepend != '.'
           if !loaded && Package.get_file(pth)
             load pth 
             loaded = true
           end
         end
-        raise "#{file} is not a known test (check your Eggs.config call)" unless loaded
+        raise "#{file} is not a known test (check your eggs_config.rb file)" unless loaded
       end
     end
     Eggs.execute_at_exit_blocks
