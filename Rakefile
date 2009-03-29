@@ -3,8 +3,8 @@ task :default => :rexap
 SL  = 'C:\Program Files\Microsoft Silverlight\2.0.40115.0'
 SL  = 'C:\Program Files\Microsoft Silverlight\3.0.40307.0' unless File.directory?(SL)
 CSC = 'C:\Windows\Microsoft.NET\Framework\v3.5\csc.exe'
-DLR = 'c:\users\jimmysch\dev\agdlr\bin\release'
-#DLR = 'c:\users\jimmysch\dev\releases\agdlr-0.5.0\bin'
+DLR = 'c:\dev\agdlr\bin\release'
+#DLR = 'c:\dev\releases\agdlr-0.5.0\bin'
 CHR = "#{DLR}\\Chiron.exe"
 
 SYSTEM_REFERENCES = %W(mscorlib System System.Core System.Net System.Windows System.Windows.Browser)
