@@ -103,11 +103,3 @@ module Kernel
 end
 
 Bacon.summary_on_exit
-
-#
-# 'mocha' is the mocking framework used for the tests
-#
-# Commented out since it's not being used
-#$: << "lib/mocha/lib"
-#require 'mocha_standalone'
-
