@@ -1,12 +1,18 @@
 task :default => :rexap
 
-SL  = 'C:\Program Files\Microsoft Silverlight\3.0.40624.0'
+SL  = 'c:\dev\vsl1s\Merlin\Main\Utilities\Silverlight\x86ret'
 CSC = 'C:\Windows\Microsoft.NET\Framework\v3.5\csc.exe'
-DLR = 'c:\dev\vsl0\Merlin\Main\Bin\Silverlight Release'
+DLR = 'c:\dev\vsl1s\Merlin\Main\Bin\Silverlight Debug'
+LOCAL_DLR = File.dirname(__FILE__) + '\dlr'
 CHR = "#{DLR}\\Chiron.exe"
 
 SYSTEM_REFERENCES = %W(mscorlib System System.Core System.Net System.Windows System.Windows.Browser)
-DLR_REFERENCES    = %W(Microsoft.Scripting.Silverlight Microsoft.Scripting Microsoft.Scripting.Core Microsoft.Scripting.ExtensionAttribute IronRuby IronRuby.Libraries IronPython IronPython.Modules)
+DLR_REFERENCES    = %W(Microsoft.Scripting.Silverlight Microsoft.Scripting Microsoft.Dynamic Microsoft.Scripting.Core Microsoft.Scripting.ExtensionAttribute IronRuby IronRuby.Libraries IronPython IronPython.Modules)
+
+task :update_dlr do
+  FileUtils.mkdir_p(LOCAL_DLR)
+  FileUtils.cp(DLR_REFERENCES.map{|i| "#{DLR}\\#{i}.dll"}, LOCAL_DLR)
+end
 
 task :build do
   puts "Building lib/Eggs.dll"
@@ -14,14 +20,18 @@ task :build do
   flags = [:'nostdlib+', :noconfig, :'debug+']
   flags << :nologo unless ENV['DEBUG']
   csc 'src/*.cs', flags,
-    convert_to_options(SYSTEM_REFERENCES, SL, 
-      convert_to_options(DLR_REFERENCES, DLR, options))
+    convert_to_options(SYSTEM_REFERENCES, SL,
+      convert_to_options(DLR_REFERENCES, LOCAL_DLR, options))
 end
 
 task :xap => :build do
   puts "Generating eggs.xap"
   flags = ENV['DEBUG'] ? [] : [:silent]
-  chr flags, :directory => 'lib', :zipdlr => 'eggs.xap'
+  eggsxap = File.dirname(__FILE__) + '/eggsxap'
+  FileUtils.mkdir_p eggsxap
+  FileUtils.cp DLR_REFERENCES.map{|i| "#{LOCAL_DLR}\\#{i}.dll"}, eggsxap
+  FileUtils.cp_r "#{File.dirname(__FILE__) + '/lib'}/.", eggsxap
+  chr flags, :directory => eggsxap, :xapfile => 'eggs.xap'
 end
 
 task :clean do
@@ -30,10 +40,11 @@ task :clean do
   FileUtils.rm 'lib/Eggs.dll' if File.exist?('lib/Eggs.dll')
   FileUtils.rm 'lib/Eggs.pdb' if File.exist?('lib/Eggs.pdb')
   FileUtils.rm 'eggs.xap' if File.exist?('eggs.xap')
+  FileUtils.rm_r 'eggsxap' if File.exist?('eggsxap')
 end
 
-task :rebuild => [:clean, :build]
-task :rexap   => [:clean, :build, :xap]
+task :rebuild => [:clean, :update_dlr, :build]
+task :rexap   => [:clean, :update_dlr, :build, :xap]
 
 def convert_to_options(assemblies, path, base_opts = {})
   assemblies.inject(base_opts) do |opts, ref|

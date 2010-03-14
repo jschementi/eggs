@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using Microsoft.Scripting.Silverlight;
 using Microsoft.Scripting.Hosting;
 using IronRuby.Hosting;
+using IronRuby.Runtime;
 using Microsoft.Scripting;
 using System.Reflection;
 
@@ -27,6 +28,7 @@ public class Eggs {
         "Microsoft.Scripting.ExtensionAttribute", 
         "Microsoft.Scripting.Core", 
         "Microsoft.Scripting", 
+        "Microsoft.Dynamic",
         "Microsoft.Scripting.Silverlight", 
         "IronRuby", 
         "IronRuby.Libraries" 
@@ -69,11 +71,14 @@ public class Eggs {
     }
 
     private static void LoadEggs() {
-        var code = Package.GetFileContents(DynamicApplication.XapFile, "eggs.rb");
+        var repl = Repl.Show(_engine, _scope);
+        GetExecutionContext(_engine).StandardOutput = repl.OutputBuffer;
+        GetExecutionContext(_engine).StandardErrorOutput = repl.OutputBuffer;
+        _scope.SetVariable("_repl", repl);
+
+        var code = DynamicApplication.VirtualFilesystem.GetFileContents(DynamicApplication.XapFile, "eggs.rb");
         var sourceCode = _engine.CreateScriptSourceFromString(code, "eggs.rb", SourceCodeKind.File);
         sourceCode.Compile(new ErrorFormatter.Sink()).Execute();
-
-        Repl.Show(_engine, _scope);
     }
 
     private static Action<StreamResourceInfo> _onDownloadComplete;
@@ -99,11 +104,15 @@ public class Eggs {
     private static void ConfigureAndRunEggs(StreamResourceInfo testsXap) {
         DynamicApplication.XapFile = testsXap;
 
-        ScriptScope scope = _engine.Runtime.Globals;
-        IronRuby.Ruby.GetExecutionContext(_engine).DefineGlobalVariable("engine", _engine);
+        ScriptScope scope = _engine.CreateScope();
+        scope.SetVariable("_engine", _engine);
         
-        var code = "Eggs.run($engine)";
+        var code = "Eggs.run(_engine)";
         var source = _engine.CreateScriptSourceFromString(code, SourceCodeKind.File);
         source.Compile(new ErrorFormatter.Sink()).Execute(scope);
+    }
+
+    private static RubyContext GetExecutionContext(ScriptEngine engine) {
+        return Microsoft.Scripting.Hosting.Providers.HostingHelpers.GetLanguageContext(engine) as RubyContext;
     }
 }

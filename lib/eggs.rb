@@ -3,29 +3,26 @@
 include Microsoft::Scripting::Silverlight
 SILVERLIGHT = true
 
+$:.unshift "#{File.dirname(__FILE__)}/eggs"
+
 #
 # 'bacon' is the spec framework used for the tests
 #
-$:.unshift "#{File.dirname(__FILE__)}/eggs/lib/bacon/lib"
 require 'bacon'
 
 # 
 # Helper for running python code from Ruby
 #
-$:.unshift "#{File.dirname(__FILE__)}/eggs"
 begin
   require 'python'
 rescue
   # ignore
 end
 
-#
-# TODO better way to redirect output?
-#
-class IO
-  def write(str)
-    Repl.current.output_buffer.write(str)
-  end
+if defined?(_repl)
+  
+  $stdout = _repl.output_buffer
+  $stderr = _repl.output_buffer
 end
 
 class Eggs
@@ -56,8 +53,7 @@ class Eggs
     def run(engine = nil)
       # eggs_config should call something like Eggs.config(:tests => ['sample'])
       load 'eggs_config.rb'
-      engine ? Repl.show(engine, engine.create_scope) : Repl.show
-      Repl.current.input_buffer.write "Eggs.current.run_tests\n"
+      current.run_tests
     end
 
     def current
@@ -79,8 +75,8 @@ class Eggs
               ''
           )
           pth = "#{prepend}/#{pth}" if prepend != '.'
-          if !loaded && Package.get_file(pth)
-            load pth 
+          if !loaded && DynamicApplication.virtual_filesystem.get_file(pth)
+            load pth
             loaded = true
           end
         end

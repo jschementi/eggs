@@ -1,1 +1,1 @@
-rake rexap
+call %~dp0rake.bat rexap %*

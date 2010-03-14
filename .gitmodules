@@ -1,3 +1,0 @@
-[submodule "lib/eggs/lib/bacon"]
-	path = lib/eggs/lib/bacon
-	url = git@github.com:jschementi/bacon.git

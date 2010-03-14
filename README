@@ -23,7 +23,7 @@ agdlr\script\server /b:eggs/sample/index.html
 
 You're default browser will open, and you should see the following:
 
-rb> Eggs.current.run_tests
+>>> Eggs.current.run_tests
 Sample bacon test
 - should be true
 

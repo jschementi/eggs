@@ -1,8 +1,4 @@
-begin
-  require 'Microsoft.Scripting, Version=2.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-rescue
-  require 'Microsoft.Scripting, Version=2.0.5.0, Culture=neutral, PublicKeyToken=null'
-end
+require 'Microsoft.Scripting'
 include Microsoft::Scripting
 include Microsoft::Scripting::Hosting
 
